@@ -12,7 +12,7 @@ class LogitPredictor(AbstractPredictor):
         union = make_union(*[t() for t in transforms])
         pipeline = [union]
         self.pipeline = make_pipeline(*pipeline)
-        self.classifier = LogisticRegression(penalty='l1', class_weight='auto')
+        self.classifier = LogisticRegression(penalty='l1', class_weight='balanced')
 
 
 class ObservingPredictor(AbstractPredictor):
@@ -23,7 +23,7 @@ class ObservingPredictor(AbstractPredictor):
         union = make_union(*[t() for t in transforms])
         pipeline = [union]
         self.pipeline = make_pipeline(*pipeline)
-        self.classifier = LogisticRegression(penalty='l1', class_weight='auto')
+        self.classifier = LogisticRegression(penalty='l1', class_weight='balanced')
 
     def _transform(self, y):
         y1 = y.copy()
@@ -47,7 +47,7 @@ class ForAgainstPredictor(AbstractPredictor):
         union = make_union(*[t() for t in transforms])
         pipeline = [union]
         self.pipeline = make_pipeline(*pipeline)
-        self.classifier = LogisticRegression(penalty='l1', class_weight='auto')
+        self.classifier = LogisticRegression(penalty='l1', class_weight='balanced')
 
     def _transform(self, X, y):
         mask = (y == 'for') | (y == 'against')

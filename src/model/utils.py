@@ -21,7 +21,7 @@ import pandas as pd
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.stem.porter import PorterStemmer
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 
 from model.cross_validation import ClaimKFold
 
@@ -52,7 +52,7 @@ def get_contraction_mappings():
 @lru_cache(maxsize=1)
 def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
     folder = os.path.join(_data_folder, 'emergent')
-    return pd.DataFrame.from_csv(os.path.join(folder, filename))
+    return pd.read_csv(os.path.join(folder, filename))
 
 
 def split_data(data):

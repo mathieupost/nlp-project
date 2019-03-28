@@ -1,6 +1,7 @@
 import numpy as np
 
-from sklearn.cross_validation import _BaseKFold, KFold
+from sklearn.model_selection import KFold
+from sklearn.model_selection._split import _BaseKFold
 
 
 class ClaimKFold(_BaseKFold):
