@@ -65,8 +65,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # When running original project, use LogitPredictor
     # predictor = LogitPredictor
     predictor = ShowDownPredictor
+    
     train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
     X, y = split_data(train_data)
 
