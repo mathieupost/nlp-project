@@ -4,12 +4,20 @@ import os
 
 sys.path.append(os.path.join('..', 'src'))
 
-import numpy as np
-import pandas as pd
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 
-from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
-from model.classifiers.rf_predictors import RandomForestPredictor
+# from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
+# from model.classifiers.rf_predictors import RandomForestPredictor
+from model.classifiers.classifier_showdown import ShowDownPredictor
 from model.utils import get_dataset, split_data, RunCV, run_test
 
 from model.baseline.transforms import (
@@ -57,8 +65,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    predictor = LogitPredictor
-
+    # predictor = LogitPredictor
+    predictor = ShowDownPredictor
     train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
     X, y = split_data(train_data)
 
@@ -136,6 +144,33 @@ if __name__ == '__main__':
             df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
         print(df_out * 100.0)
     else:
-        p = predictor([transforms[t] for t in inc_transforms])
-        test_score = run_test(X, y, test_data, p, display=True)
+        classifiers = [
+            # KNeighborsClassifier(3),  # working
+            # SVC(kernel="linear", C=0.025, probability=True, gamma="scale"),  # working
+            # SVC(kernel="rbf", C=0.025, probability=True, gamma="scale"),  # working
+            # NuSVC(nu=0.46, probability=True, gamma="scale"), #  working, nu is infeasible from .47
+            # DecisionTreeClassifier(),  # working
+            # RandomForestClassifier(n_estimators=100),  # working
+            # AdaBoostClassifier(),  # working
+            # GradientBoostingClassifier(),  # working
+            # GaussianNB(), #  not working, our data is too sparse: simple Gaussian won't fit well
+            # GaussianProcessClassifier(1.0 * RBF(1.0)),  # not working, data too sparse
+            # LinearDiscriminantAnalysis(), #  not working, data too sparse
+            # QuadraticDiscriminantAnalysis(), # not working, data too sparse
+        ]
+
+        # Logging for Visual Comparison
+        # log_cols = ["Classifier", "Accuracy", "Log Loss"]
+        # log = pd.DataFrame(columns=log_cols)
+
+        for clf in classifiers:
+            p = predictor([transforms[t] for t in inc_transforms], clf)
+            test_score = run_test(X, y, test_data, p, display=True)
+
+
+
+
+
+
+
 
