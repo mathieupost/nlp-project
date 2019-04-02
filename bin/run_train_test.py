@@ -1,9 +1,13 @@
 import argparse
 import sys
 import os
-
+import pandas as pd
+import numpy as np
 sys.path.append(os.path.join('..', 'src'))
 
+
+from numpy import loadtxt
+from xgboost import XGBClassifier
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC, NuSVC
@@ -15,7 +19,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 
-# from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
+from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
 # from model.classifiers.rf_predictors import RandomForestPredictor
 from model.classifiers.classifier_showdown import ShowDownPredictor
 from model.utils import get_dataset, split_data, RunCV, run_test
@@ -66,11 +70,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # When running original project, use LogitPredictor
-    # predictor = LogitPredictor
-    predictor = ShowDownPredictor
-    
+    predictor = LogitPredictor
+    # predictor = ShowDownPredictor
+
     train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
     X, y = split_data(train_data)
+
+    # CV
+    # CV_data = get_dataset('url-versions-2015-06-14-clean.csv')
+    # X, y = split_data(CV_data)
 
     test_data = get_dataset('url-versions-2015-06-14-clean-test.csv')
 
@@ -147,18 +155,13 @@ if __name__ == '__main__':
         print(df_out * 100.0)
     else:
         classifiers = [
-            # KNeighborsClassifier(3),  # working
+            KNeighborsClassifier(8),  # working
             # SVC(kernel="linear", C=0.025, probability=True, gamma="scale"),  # working
             # SVC(kernel="rbf", C=0.025, probability=True, gamma="scale"),  # working
-            # NuSVC(nu=0.46, probability=True, gamma="scale"), #  working, nu is infeasible from .47
             # DecisionTreeClassifier(),  # working
             # RandomForestClassifier(n_estimators=100),  # working
-            # AdaBoostClassifier(),  # working
             # GradientBoostingClassifier(),  # working
-            # GaussianNB(), #  not working, our data is too sparse: simple Gaussian won't fit well
-            # GaussianProcessClassifier(1.0 * RBF(1.0)),  # not working, data too sparse
-            # LinearDiscriminantAnalysis(), #  not working, data too sparse
-            # QuadraticDiscriminantAnalysis(), # not working, data too sparse
+            # XGBClassifier()
         ]
 
         # Logging for Visual Comparison
