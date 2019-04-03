@@ -156,57 +156,55 @@ if __name__ == '__main__':
             df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
         print(df_out * 100.0)
     else:
-        # classifiers = [
-            # KNeighborsClassifier(8),  # working
-            # SVC(kernel="linear", C=0.025, probability=True, gamma="scale"),  # working
-            # SVC(kernel="rbf", C=0.025, probability=True, gamma="scale"),  # working
-            # DecisionTreeClassifier(),  # working
-            # RandomForestClassifier(n_estimators=100),  # working
-            # GradientBoostingClassifier(),  # working
-            # XGBClassifier()
-        # ]
+         classifiers = [
+            KNeighborsClassifier(18),  # working
+            SVC(kernel="rbf", C=1000, probability=True, gamma=0.0001),  # working
+            DecisionTreeClassifier(),  # working
+            RandomForestClassifier(n_estimators=100),  # working
+            GradientBoostingClassifier(),  # working
+            XGBClassifier()
+         ]
 
         # Set the parameters by cross-validation
-        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
-                             'C': [1, 10, 100, 1000]},
-                            {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
-
-        scores = ['precision', 'recall']
-
-        for score in scores:
-            print("# Tuning hyper-parameters for %s" % score)
-            print()
-
-            clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
-                               scoring='%s_macro' % score)
-
-            p = predictor([transforms[t] for t in inc_transforms], clf)
-            test_score = run_test(X_train, y_train, test_data, p, display=True)
-
-
-            print("Best parameters set found on development set:")
-            print()
-            print(clf.best_params_)
-            print()
-            print("Grid scores on development set:")
-            print()
-            means = clf.cv_results_['mean_test_score']
-            stds = clf.cv_results_['std_test_score']
-            for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-                print("%0.3f (+/-%0.03f) for %r"
-                      % (mean, std * 2, params))
-            print()
-
-            print("Detailed classification report:")
-            print()
-            print("The model is trained on the full development set.")
-            print("The scores are computed on the full evaluation set.")
-            print()
-
-            y_true, y_pred = y_test, p.predict(X_test)
-
-            print(classification_report(y_true, y_pred))
-            print()
+         #         #tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+         #                             # 'C': [1, 10, 100, 1000]},
+         #                             # {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+         #
+         #         #scores = ['precision', 'recall']
+         #
+         #         #for score in scores:
+         #             # print("# Tuning hyper-parameters for %s" % score)
+         #             # print()
+         #
+         #             # clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
+         #                                # scoring='%s_macro' % score)
+         #
+         #             # p = predictor([transforms[t] for t in inc_transforms], clf)
+         #             # test_score = run_test(X_train, y_train, test_data, p, display=True)
+         #
+         #             # print("Best parameters set found on development set:")
+         #             # print()
+         #             # print(clf.best_params_)
+         #             # print()
+         #             # print("Grid scores on development set:")
+         #             # print()
+         #             # means = clf.cv_results_['mean_test_score']
+         #             # stds = clf.cv_results_['std_test_score']
+         #             # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+         #              #   print("%0.3f (+/-%0.03f) for %r"
+         #                       # % (mean, std * 2, params))
+         #             # print()
+         #
+         #             # print("Detailed classification report:")
+         #             # print()
+         #             # print("The model is trained on the full development set.")
+         #             # print("The scores are computed on the full evaluation set.")
+         #             # print()
+         #
+         #             # y_true, y_pred = y_test, p.predict(X_test)
+         #
+         #             # print(classification_report(y_true, y_pred))
+         #             # print()
 
 
         # Logging for Visual Comparison
@@ -214,9 +212,49 @@ if __name__ == '__main__':
         # log = pd.DataFrame(columns=log_cols)
 
         # Classifier showdown
-        # for clf in classifiers:
-        #    p = predictor([transforms[t] for t in inc_transforms], clf)
-        #    test_score = run_test(X, y, test_data, p, display=True)
+
+         # Set the parameters by cross-validation
+         #     param_grid = {'n_neighbors': np.arange(1, 25)}
+    #
+    # scores = ['precision', 'recall']
+    #
+    # for score in scores:
+    #    print("# Tuning hyper-parameters for %s" % score)
+    #    print()
+    #    knn2 = KNeighborsClassifier()
+    #    clf = GridSearchCV(knn2, param_grid, cv=10,
+    #        scoring='%s_macro' % score)
+    #
+    #    p = predictor([transforms[t] for t in inc_transforms], clf)
+    #    test_score = run_test(X_train, y_train, test_data, p, display=True)
+    #
+    #    print("Best parameters set found on development set:")
+    #    print()
+    #    print(clf.best_params_)
+    #    print()
+    #    print("Grid scores on development set:")
+    #    print()
+    #    means = clf.cv_results_['mean_test_score']
+    #    stds = clf.cv_results_['std_test_score']
+    #    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+    #       print("%0.3f (+/-%0.03f) for %r"
+    #    % (mean, std * 2, params))
+    #    print()
+    #
+    #    print("Detailed classification report:")
+    #    print()
+    #    print("The model is trained on the full development set.")
+    #    print("The scores are computed on the full evaluation set.")
+    #    print()
+    #
+    #    y_true, y_pred = y_test, p.predict(X_test)
+    #
+    #    print(classification_report(y_true, y_pred))
+    #    print()
+
+    for clf in classifiers:
+            p = predictor([transforms[t] for t in inc_transforms], clf)
+            test_score = run_test(X, y, test_data, p, display=True)
 
 
 

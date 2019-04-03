@@ -1,6 +1,13 @@
+import argparse
+import sys
+import os
+import pandas as pd
+import numpy as np
+sys.path.append(os.path.join('..', 'src'))
+
 from itertools import chain, combinations
 
-from sklearn import grid_search
+from sklearn.model_selection import GridSearchCV
 
 from model.utils import get_dataset, split_data
 from model.classifiers.lr_predictors import LogitPredictor
@@ -30,8 +37,7 @@ def do_grid_search(X, y, classifier, param_grid, cv):
     def scorer(estimator, XX, yy):
         return estimator.score(XX, yy).accuracy
 
-
-    clf = grid_search.GridSearchCV(classifier, param_grid, cv=cv, scoring=scorer, verbose=True)
+    clf = GridSearchCV(classifier, param_grid, cv=cv, scoring=scorer, verbose=True)
     clf.fit(X, y)
 
     print("Best parameters set found on development set:")
