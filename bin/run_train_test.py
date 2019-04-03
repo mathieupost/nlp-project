@@ -18,6 +18,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.metrics import classification_report
 
 from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
 # from model.classifiers.rf_predictors import RandomForestPredictor
@@ -70,15 +72,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # When running original project, use LogitPredictor
-    predictor = LogitPredictor
-    # predictor = ShowDownPredictor
+    # predictor = LogitPredictor
+    predictor = ShowDownPredictor
 
     train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
     X, y = split_data(train_data)
+    # Split the dataset in two equal parts
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.5, random_state=0)
 
-    # CV
-    # CV_data = get_dataset('url-versions-2015-06-14-clean.csv')
-    # X, y = split_data(CV_data)
 
     test_data = get_dataset('url-versions-2015-06-14-clean-test.csv')
 
@@ -154,23 +156,67 @@ if __name__ == '__main__':
             df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
         print(df_out * 100.0)
     else:
-        classifiers = [
-            KNeighborsClassifier(8),  # working
+        # classifiers = [
+            # KNeighborsClassifier(8),  # working
             # SVC(kernel="linear", C=0.025, probability=True, gamma="scale"),  # working
             # SVC(kernel="rbf", C=0.025, probability=True, gamma="scale"),  # working
             # DecisionTreeClassifier(),  # working
             # RandomForestClassifier(n_estimators=100),  # working
             # GradientBoostingClassifier(),  # working
             # XGBClassifier()
-        ]
+        # ]
+
+        # Set the parameters by cross-validation
+        tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
+                             'C': [1, 10, 100, 1000]},
+                            {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
+
+        scores = ['precision', 'recall']
+
+        for score in scores:
+            print("# Tuning hyper-parameters for %s" % score)
+            print()
+
+            clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
+                               scoring='%s_macro' % score)
+
+            p = predictor([transforms[t] for t in inc_transforms], clf)
+            test_score = run_test(X_train, y_train, test_data, p, display=True)
+
+
+            print("Best parameters set found on development set:")
+            print()
+            print(clf.best_params_)
+            print()
+            print("Grid scores on development set:")
+            print()
+            means = clf.cv_results_['mean_test_score']
+            stds = clf.cv_results_['std_test_score']
+            for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+                print("%0.3f (+/-%0.03f) for %r"
+                      % (mean, std * 2, params))
+            print()
+
+            print("Detailed classification report:")
+            print()
+            print("The model is trained on the full development set.")
+            print("The scores are computed on the full evaluation set.")
+            print()
+
+            y_true, y_pred = y_test, p.predict(X_test)
+
+            print(classification_report(y_true, y_pred))
+            print()
+
 
         # Logging for Visual Comparison
         # log_cols = ["Classifier", "Accuracy", "Log Loss"]
         # log = pd.DataFrame(columns=log_cols)
 
-        for clf in classifiers:
-            p = predictor([transforms[t] for t in inc_transforms], clf)
-            test_score = run_test(X, y, test_data, p, display=True)
+        # Classifier showdown
+        # for clf in classifiers:
+        #    p = predictor([transforms[t] for t in inc_transforms], clf)
+        #    test_score = run_test(X, y, test_data, p, display=True)
 
 
 
