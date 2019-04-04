@@ -119,7 +119,7 @@ def generate_test_training_set(data, test_set_fraction=0.2):
     """
     claim_ids = np.array(list(set(data.claimId.values)))
     claim_ids_rand = np.random.permutation(claim_ids)
-    claim_ids_test = claim_ids_rand[:len(claim_ids_rand) * test_set_fraction]
+    claim_ids_test = claim_ids_rand[:int(len(claim_ids_rand) * test_set_fraction)]
     claim_ids_train = set(claim_ids_rand).difference(claim_ids_test)
     test_data = data[data.claimId.isin(claim_ids_test)]
     train_data = data[data.claimId.isin(claim_ids_train)]

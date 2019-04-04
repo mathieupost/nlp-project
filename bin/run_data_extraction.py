@@ -5,6 +5,9 @@ import argparse
 import string
 import re
 import numpy as np
+import sys
+
+sys.path.append(os.path.join('..', 'src'))
 
 import pandas as pd
 
@@ -17,7 +20,8 @@ _relevant_data_columns = [
     'articleId',
     'articleVersion',
     'articleHeadline',
-    'articleHeadlineStance'
+    'articleHeadlineStance',
+    'articleBody',
 ]
 
 _final_data_columns = [
@@ -26,7 +30,7 @@ _final_data_columns = [
     'articleHeadlineStance',
     'articleId',
     'claimId',
-
+    'articleBody',
 ]
 
 
@@ -53,6 +57,8 @@ def _clean_text(data):
 
     # Convert chars to UTF
     def convert_to_utf(s):
+        if s is not str:
+            s = str(s)
         return s.decode('utf8')
 
     funcs.append(convert_to_utf)
@@ -134,6 +140,7 @@ def _clean_text(data):
         print 'Applying function:', f.__name__
         data['articleHeadline'] = data.articleHeadline.apply(f)
         data['claimHeadline'] = data.claimHeadline.apply(f)
+        data['articleBody'] = data.articleBody.apply(f)
 
     return data[_final_data_columns]
 
@@ -166,15 +173,15 @@ def _main(filepath, filename):
 
     # write out a new 'cleaned' data file
     split_filename = os.path.splitext(filename)
-    filename_clean = os.path.join(filepath, split_filename[0] + '-clean')
+    filename_clean = os.path.join(filepath, split_filename[0] + '-clean-with-body')
     data.to_csv(filename_clean + split_filename[1], encoding='utf-8')
 
     # Generate test/train datasets
     test_data, train_data = generate_test_training_set(data)
-    filename_test = filename_clean + '-test'
+    filename_test = filename_clean + '-test-with-body'
     test_data.to_csv(filename_test + split_filename[1], encoding='utf-8')
 
-    filename_train = filename_clean + '-train'
+    filename_train = filename_clean + '-train-with-body'
     train_data.to_csv(filename_train + split_filename[1], encoding='utf-8')
 
 

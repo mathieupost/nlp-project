@@ -59,10 +59,10 @@ if __name__ == '__main__':
 
     predictor = LogitPredictor
 
-    train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
+    train_data = get_dataset('url-versions-2015-06-14-clean-with-body-train-with-body.csv')
     X, y = split_data(train_data)
 
-    test_data = get_dataset('url-versions-2015-06-14-clean-test.csv')
+    test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
         'BoW': lambda: BoWTransform(),
