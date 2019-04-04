@@ -21,7 +21,8 @@ import pandas as pd
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.stem.porter import PorterStemmer
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, KFold
+
 
 from model.cross_validation import ClaimKFold
 
@@ -378,8 +379,9 @@ class RunCV(object):
             cms.append(score.cm)
             return score.accuracy
 
-        skf = ClaimKFold(self.X, n_folds)
-        scr = cross_val_score(self.predictor, self.X, self.y.values, cv=skf, scoring=scorer)
+        skf = ClaimKFold(self.X, n_folds, False)
+        kf = KFold(n_folds)
+        scr = cross_val_score(self.predictor, self.X, self.y.values, cv=kf, scoring=scorer)
 
         if self.display:
             print('\n>> Averages across all folds <<')
