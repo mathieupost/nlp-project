@@ -56,6 +56,7 @@ if __name__ == '__main__':
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
     group.add_argument('-a', action='store_true')
+    group.add_argument('-t', action='store_true')
 
     args = parser.parse_args()
 
@@ -117,9 +118,11 @@ if __name__ == '__main__':
         inc_transforms_cls = [transforms[t] for t in inc_transforms]
         p = predictor(inc_transforms_cls)
         cv_score = RunCV(X, y, p, display=False).run_cv()
-        # test_score = run_test(X, y, test_data, p, display=False)
         print 'CV score: :{0:f}'.format(cv_score.accuracy)
-        print 'Test score: :{0:f}'.format(test_score.accuracy)
+
+        if args.t:
+            test_score = run_test(X, y, test_data, p, display=False)
+            print 'Test score: :{0:f}'.format(test_score.accuracy)
 
         for ablation in ablations:
             print 'Ablating: ' + str(ablation)
@@ -137,7 +140,7 @@ if __name__ == '__main__':
             print 'Ablated CV score:', cv_score_ablate.accuracy
             df_out.ix[key, 'accuracy-cv'] = cv_score.accuracy - cv_score_ablate.accuracy
 
-            if args.f:
+            if args.t:
                 test_score_ablate = run_test(X, y, test_data, p, display=False)
                 print 'Ablated test score:', test_score_ablate.accuracy
                 df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
@@ -146,6 +149,8 @@ if __name__ == '__main__':
     else:
         p = predictor([transforms[t] for t in inc_transforms])
         cv_score = RunCV(X, y, p, display=True).run_cv()
-        if args.f:
+        print 'CV score: ', cv_score.accuracy
+        if args.t:
+            print 'arg f is set: ', args.t
             test_score = run_test(X, y, test_data, p, display=True)
 
