@@ -63,7 +63,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoW,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoW-AH,BoW-AB,W2V,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
@@ -75,17 +75,18 @@ if __name__ == '__main__':
     predictor = LogitPredictor
     # predictor = ShowDownPredictor
 
-    train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
+    train_data = get_dataset('url-versions-2015-06-14-clean-with-body-train-with-body.csv')
     X, y = split_data(train_data)
     # Split the dataset in two equal parts
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.5, random_state=0)
 
 
-    test_data = get_dataset('url-versions-2015-06-14-clean-test.csv')
+    test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
-        'BoW': lambda: BoWTransform(),
+        'BoW-AH': lambda: BoWTransform('articleHeadline'),
+        'BoW-AB': lambda: BoWTransform('articleBody'),
         'Q': QuestionMarkTransform,
         'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
