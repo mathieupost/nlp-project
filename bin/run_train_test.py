@@ -53,10 +53,10 @@ if __name__ == '__main__':
     parser.add_argument('-f',
                         default="Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
+    parser.add_argument('-t', action='store_true')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
     group.add_argument('-a', action='store_true')
-    group.add_argument('-t', action='store_true')
 
     args = parser.parse_args()
 
@@ -151,6 +151,5 @@ if __name__ == '__main__':
         cv_score = RunCV(X, y, p, display=True).run_cv()
         print 'CV score: ', cv_score.accuracy
         if args.t:
-            print 'arg f is set: ', args.t
             test_score = run_test(X, y, test_data, p, display=True)
 
