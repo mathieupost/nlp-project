@@ -379,7 +379,6 @@ class RunCV(object):
             cms.append(score.cm)
             return score.accuracy
 
-        skf = ClaimKFold(self.X, n_folds, False)
         kf = KFold(n_folds)
         scr = cross_val_score(self.predictor, self.X, self.y.values, cv=kf, scoring=scorer)
 

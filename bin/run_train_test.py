@@ -21,6 +21,8 @@ from model.baseline.transforms import (
     BoWBTransform,
     BoUgTransform,
     BoBgTransform,
+    BoRefutingTransform,
+    BoHedgingTransform,
     PolarityTransform,
     BrownClusterPairTransform
 )
@@ -51,7 +53,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoUg,BoBg,BoW-B,W2V,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     parser.add_argument('-t', action='store_true')
     group = parser.add_mutually_exclusive_group()
@@ -71,8 +73,10 @@ if __name__ == '__main__':
         'BoW-B': BoWBTransform,
         'BoUg': BoUgTransform,
         'BoBg': BoBgTransform,
+        'BoR': BoRefutingTransform,
+        'BoH': BoHedgingTransform,
         'Q': QuestionMarkTransform,
-        # 'W2V': Word2VecSimilaritySemanticTransform,
+        'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
         'NegAlgn': NegationAlignmentTransform,
         'RootDep': DependencyRootDepthTransform,
@@ -148,7 +152,7 @@ if __name__ == '__main__':
         print(df_out * 100.0)
     else:
         p = predictor([transforms[t] for t in inc_transforms])
-        cv_score = RunCV(X, y, p, display=True).run_cv()
+        cv_score = RunCV(X, y, p, display=False).run_cv()
         print 'CV score: ', cv_score.accuracy
         if args.t:
             test_score = run_test(X, y, test_data, p, display=True)
