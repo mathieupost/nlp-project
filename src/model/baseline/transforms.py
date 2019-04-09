@@ -12,18 +12,51 @@ from model.utils import get_tokenized_lemmas, get_stanparse_data, \
     get_brown_cluster_data, get_aligned_data, get_stem
 
 
-class BoWTransform(StatelessTransform):
+class BoWBTransform(StatelessTransform):
 
-    def __init__(self, field, ngram_upper_range=2, max_features=500):
+    def __init__(self, ngram_upper_range=2, max_features=1000):
         self.cv = None
-        self.field = field
         self.ngram_upper_range = ngram_upper_range
         self.max_features = max_features
 
     def fit(self, X, y=None):
-        text = X[self.field].values.astype('U')
+        text = X.articleBody.values.astype('U')
         self.cv = CountVectorizer(ngram_range=(1, self.ngram_upper_range),
                                   max_features=self.max_features)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Unigram (terms/words)
+class BoUgTransform(StatelessTransform):
+
+    def __init__(self, max_features=1000):
+        self.cv = None
+        self.max_features = max_features
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(ngram_range=(1, 1), max_features=self.max_features)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Bigrams
+class BoBgTransform(StatelessTransform):
+
+    def __init__(self, max_features=2000):
+        self.cv = None
+        self.max_features = max_features
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(ngram_range=(2, 2), max_features=self.max_features)
         self.cv.fit_transform(text)
         return self
 

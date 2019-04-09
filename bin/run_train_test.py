@@ -18,7 +18,9 @@ from model.baseline.transforms import (
     HedgingWordsTransform,
     InteractionTransform,
     NegationOfRefutingWordsTransform,
-    BoWTransform,
+    BoWBTransform,
+    BoUgTransform,
+    BoBgTransform,
     PolarityTransform,
     BrownClusterPairTransform
 )
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoW-AH,BoW-AB,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
@@ -65,10 +67,11 @@ if __name__ == '__main__':
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
-        'BoW-AH': lambda: BoWTransform('articleHeadline'),
-        'BoW-AB': lambda: BoWTransform('articleBody'),
+        'BoW-B': BoWBTransform,
+        'BoUg': BoUgTransform,
+        'BoBg': BoBgTransform,
         'Q': QuestionMarkTransform,
-        'W2V': Word2VecSimilaritySemanticTransform,
+        # 'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
         'NegAlgn': NegationAlignmentTransform,
         'RootDep': DependencyRootDepthTransform,
@@ -105,7 +108,7 @@ if __name__ == '__main__':
         if args.f:
             features = args.f
         else:
-            features = "Q,BoW,AlgnW2V,AlgnPPDB,RootDist,NegAlgn,SVO"
+            features = "Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO"
         ablations = [[x] for x in features.split(',')]
         df_out = pd.DataFrame(index=['-' + str(a) for a in ablations],
                               columns=['accuracy-cv', 'accuracy-test'], data=np.nan)
