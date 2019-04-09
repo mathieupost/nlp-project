@@ -96,10 +96,12 @@ if __name__ == '__main__':
 
             p = predictor(inc_transforms_cls)
             cv_score = RunCV(X, y, p, display=True).run_cv()
-            test_score = run_test(X, y, test_data, p, display=True)
-
             df_out.ix[k, 'accuracy-cv'] = cv_score.accuracy
-            df_out.ix[k, 'accuracy-test'] = test_score.accuracy
+
+            if args.t:
+                # calculate test set accuracy score
+                test_score = run_test(X, y, test_data, p, display=True)
+                df_out.ix[k, 'accuracy-test'] = test_score.accuracy
         print(df_out)
     elif args.a:
         # ablation
@@ -115,7 +117,7 @@ if __name__ == '__main__':
         inc_transforms_cls = [transforms[t] for t in inc_transforms]
         p = predictor(inc_transforms_cls)
         cv_score = RunCV(X, y, p, display=False).run_cv()
-        test_score = run_test(X, y, test_data, p, display=False)
+        # test_score = run_test(X, y, test_data, p, display=False)
         print 'CV score: :{0:f}'.format(cv_score.accuracy)
         print 'Test score: :{0:f}'.format(test_score.accuracy)
 
@@ -131,15 +133,19 @@ if __name__ == '__main__':
             inc_transforms_cls_ablate = [transforms[t] for t in inc_transforms_ablate]
             p = predictor(inc_transforms_cls_ablate)
             cv_score_ablate = RunCV(X, y, p, display=False).run_cv()
-            test_score_ablate = run_test(X, y, test_data, p, display=False)
-
             key = '-' + str(ablation)
             print 'Ablated CV score:', cv_score_ablate.accuracy
-            print 'Ablated test score:', test_score_ablate.accuracy
             df_out.ix[key, 'accuracy-cv'] = cv_score.accuracy - cv_score_ablate.accuracy
-            df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
+
+            if args.f:
+                test_score_ablate = run_test(X, y, test_data, p, display=False)
+                print 'Ablated test score:', test_score_ablate.accuracy
+                df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
+
         print(df_out * 100.0)
     else:
         p = predictor([transforms[t] for t in inc_transforms])
-        test_score = run_test(X, y, test_data, p, display=True)
+        cv_score = RunCV(X, y, p, display=True).run_cv()
+        if args.f:
+            test_score = run_test(X, y, test_data, p, display=True)
 
