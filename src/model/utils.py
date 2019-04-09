@@ -57,7 +57,7 @@ def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
 
 def split_data(data):
     y = data.articleHeadlineStance
-    X = data[['claimHeadline', 'articleHeadline', 'claimId', 'articleId']]
+    X = data[['claimHeadline', 'articleHeadline', 'articleBody', 'claimId', 'articleId']]
     return X, y
 
 

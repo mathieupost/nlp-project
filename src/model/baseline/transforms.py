@@ -14,13 +14,14 @@ from model.utils import get_tokenized_lemmas, get_stanparse_data, \
 
 class BoWTransform(StatelessTransform):
 
-    def __init__(self, ngram_upper_range=2, max_features=500):
+    def __init__(self, field, ngram_upper_range=2, max_features=500):
         self.cv = None
+        self.field = field
         self.ngram_upper_range = ngram_upper_range
         self.max_features = max_features
 
     def fit(self, X, y=None):
-        text = X.articleHeadline.values
+        text = X[self.field].values.astype('U')
         self.cv = CountVectorizer(ngram_range=(1, self.ngram_upper_range),
                                   max_features=self.max_features)
         self.cv.fit_transform(text)

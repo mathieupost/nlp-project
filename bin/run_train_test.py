@@ -49,7 +49,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoW,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoW-AH,BoW-AB,W2V,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
@@ -65,7 +65,8 @@ if __name__ == '__main__':
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
-        'BoW': lambda: BoWTransform(),
+        'BoW-AH': lambda: BoWTransform('articleHeadline'),
+        'BoW-AB': lambda: BoWTransform('articleBody'),
         'Q': QuestionMarkTransform,
         'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
