@@ -72,8 +72,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # When running original project, use LogitPredictor
-    # predictor = LogitPredictor
-    predictor = ShowDownPredictor
+    predictor = LogitPredictor
+    # predictor = ShowDownPredictor
 
     train_data = get_dataset('url-versions-2015-06-14-clean-train.csv')
     X, y = split_data(train_data)
@@ -252,10 +252,12 @@ if __name__ == '__main__':
     #    print(classification_report(y_true, y_pred))
     #    print()
 
-    for clf in classifiers:
-            p = predictor([transforms[t] for t in inc_transforms], clf)
-            test_score = run_test(X, y, test_data, p, display=True)
+        # for clf in classifiers:
+        #     p = predictor([transforms[t] for t in inc_transforms], clf)
+        #     test_score = run_test(X, y, test_data, p, display=True)
 
+    p = predictor([transforms[t] for t in inc_transforms])
+    test_score = run_test(X, y, test_data, p, display=True)
 
 
 

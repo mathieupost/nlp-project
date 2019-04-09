@@ -21,9 +21,7 @@ import pandas as pd
 import nltk
 from nltk.corpus import wordnet as wn
 from nltk.stem.porter import PorterStemmer
-from sklearn.model_selection import cross_val_score
-
-from model.cross_validation import ClaimKFold
+from sklearn.model_selection import cross_val_score, KFold
 
 VALID_STANCE_LABELS = ['for', 'against', 'observing']
 
@@ -378,7 +376,7 @@ class RunCV(object):
             cms.append(score.cm)
             return score.accuracy
 
-        skf = ClaimKFold(self.X, n_folds)
+        skf = KFold(n_folds)
         scr = cross_val_score(self.predictor, self.X, self.y.values, cv=skf, scoring=scorer)
 
         if self.display:
@@ -403,6 +401,7 @@ def run_test(X, y, test_data, predictor, display=False):
     score = predictor.score(test_data_copy, y_test)
 
     if display:
+        print(predictor.classifier)
         print(str(score))
     return score
 

@@ -7,7 +7,7 @@ from sklearn.model_selection._split import _BaseKFold
 class ClaimKFold(_BaseKFold):
 
     def __init__(self, data, n_folds=10, shuffle=False):
-        super(ClaimKFold, self).__init__(len(data), n_folds, None, False, None)
+        super(ClaimKFold, self).__init__(n_folds, False, False, None)
         self.shuffle = shuffle
         self.data = data.copy()
         self.data['iloc_index'] = range(len(self.data))
