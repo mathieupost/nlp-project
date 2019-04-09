@@ -22,6 +22,8 @@ import nltk
 from nltk.corpus import wordnet as wn
 from nltk.stem.porter import PorterStemmer
 from sklearn.model_selection import cross_val_score, KFold
+from model.cross_validation import ClaimKFold
+
 
 VALID_STANCE_LABELS = ['for', 'against', 'observing']
 
@@ -376,8 +378,9 @@ class RunCV(object):
             cms.append(score.cm)
             return score.accuracy
 
-        skf = KFold(n_folds)
-        scr = cross_val_score(self.predictor, self.X, self.y.values, cv=skf, scoring=scorer)
+        skf = ClaimKFold(self.X, n_folds, False)
+        kf = KFold(n_folds)
+        scr = cross_val_score(self.predictor, self.X, self.y.values, cv=kf, scoring=scorer)
 
         if self.display:
             print('\n>> Averages across all folds <<')

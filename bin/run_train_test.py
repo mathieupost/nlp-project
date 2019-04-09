@@ -32,7 +32,9 @@ from model.baseline.transforms import (
     HedgingWordsTransform,
     InteractionTransform,
     NegationOfRefutingWordsTransform,
-    BoWTransform,
+    BoWBTransform,
+    BoUgTransform,
+    BoBgTransform,
     PolarityTransform,
     BrownClusterPairTransform
 )
@@ -63,11 +65,12 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoW-AH,BoW-AB,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
     group.add_argument('-a', action='store_true')
+    group.add_argument('-t', action='store_true')
 
     args = parser.parse_args()
 
@@ -85,10 +88,11 @@ if __name__ == '__main__':
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
-        'BoW-AH': lambda: BoWTransform('articleHeadline'),
-        'BoW-AB': lambda: BoWTransform('articleBody'),
+        'BoW-B': BoWBTransform,
+        'BoUg': BoUgTransform,
+        'BoBg': BoBgTransform,
         'Q': QuestionMarkTransform,
-        'W2V': Word2VecSimilaritySemanticTransform,
+        # 'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
         'NegAlgn': NegationAlignmentTransform,
         'RootDep': DependencyRootDepthTransform,
@@ -113,10 +117,12 @@ if __name__ == '__main__':
 
             p = predictor(inc_transforms_cls)
             cv_score = RunCV(X, y, p, display=True).run_cv()
-            test_score = run_test(X, y, test_data, p, display=True)
-
             df_out.ix[k, 'accuracy-cv'] = cv_score.accuracy
-            df_out.ix[k, 'accuracy-test'] = test_score.accuracy
+
+            if args.t:
+                # calculate test set accuracy score
+                test_score = run_test(X, y, test_data, p, display=True)
+                df_out.ix[k, 'accuracy-test'] = test_score.accuracy
         print(df_out)
     elif args.a:
         # ablation
@@ -125,16 +131,18 @@ if __name__ == '__main__':
         if args.f:
             features = args.f
         else:
-            features = "Q,BoW,AlgnW2V,AlgnPPDB,RootDist,NegAlgn,SVO"
+            features = "Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO"
         ablations = [[x] for x in features.split(',')]
         df_out = pd.DataFrame(index=['-' + str(a) for a in ablations],
                               columns=['accuracy-cv', 'accuracy-test'], data=np.nan)
         inc_transforms_cls = [transforms[t] for t in inc_transforms]
         p = predictor(inc_transforms_cls)
         cv_score = RunCV(X, y, p, display=False).run_cv()
-        test_score = run_test(X, y, test_data, p, display=False)
         print 'CV score: :{0:f}'.format(cv_score.accuracy)
-        print 'Test score: :{0:f}'.format(test_score.accuracy)
+
+        if args.t:
+            test_score = run_test(X, y, test_data, p, display=False)
+            print 'Test score: :{0:f}'.format(test_score.accuracy)
 
         for ablation in ablations:
             print 'Ablating: ' + str(ablation)
@@ -148,13 +156,15 @@ if __name__ == '__main__':
             inc_transforms_cls_ablate = [transforms[t] for t in inc_transforms_ablate]
             p = predictor(inc_transforms_cls_ablate)
             cv_score_ablate = RunCV(X, y, p, display=False).run_cv()
-            test_score_ablate = run_test(X, y, test_data, p, display=False)
-
             key = '-' + str(ablation)
             print 'Ablated CV score:', cv_score_ablate.accuracy
-            print 'Ablated test score:', test_score_ablate.accuracy
             df_out.ix[key, 'accuracy-cv'] = cv_score.accuracy - cv_score_ablate.accuracy
-            df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
+
+            if args.t:
+                test_score_ablate = run_test(X, y, test_data, p, display=False)
+                print 'Ablated test score:', test_score_ablate.accuracy
+                df_out.ix[key, 'accuracy-test'] = test_score.accuracy - test_score_ablate.accuracy
+
         print(df_out * 100.0)
     else:
          classifiers = [
@@ -257,12 +267,9 @@ if __name__ == '__main__':
         #     p = predictor([transforms[t] for t in inc_transforms], clf)
         #     test_score = run_test(X, y, test_data, p, display=True)
 
-    p = predictor([transforms[t] for t in inc_transforms])
-    test_score = run_test(X, y, test_data, p, display=True)
-
-
-
-
-
-
-
+        p = predictor([transforms[t] for t in inc_transforms])
+        cv_score = RunCV(X, y, p, display=True).run_cv()
+        print 'CV score: ', cv_score.accuracy
+        if args.t:
+            print 'arg f is set: ', args.t
+            test_score = run_test(X, y, test_data, p, display=True)
