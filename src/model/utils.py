@@ -170,7 +170,7 @@ def get_hungarian_alignment_score_data():
 
 @lru_cache(maxsize=1)
 def get_w2vec_data():
-    with open(os.path.join(_pickled_data_folder, 'w2vec-data.pickle'), 'rb') as f:
+    with open(os.path.join(_pickled_data_folder, 'w2vec-data-with-body.pickle'), 'rb') as f:
         return pickle.load(f)
 
 
@@ -188,7 +188,7 @@ def get_stanparse_depths():
 
 @lru_cache(maxsize=1)
 def get_cosine_similarity_data():
-    with open(os.path.join(_pickled_data_folder, 'cosine-similarity.pickle'), 'rb') as f:
+    with open(os.path.join(_pickled_data_folder, 'cosine-similarity-with-body.pickle'), 'rb') as f:
         return pickle.load(f)
 
 
@@ -216,7 +216,7 @@ def convert_text_to_vec(model, text, grp=(_UNIT_ADD, _OP_ADD)):
 @lru_cache(maxsize=1)
 def get_w2v_model():
     folder = os.path.join(_data_folder, 'google')
-    return gensim.models.Word2Vec.load_word2vec_format(os.path.join(folder, "GoogleNews-vectors-negative300.bin"),
+    return gensim.models.KeyedVectors.load_word2vec_format(os.path.join(folder, "GoogleNews-vectors-negative300.bin"),
                                                        binary=True)
 
 @lru_cache(maxsize=100000)

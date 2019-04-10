@@ -21,7 +21,7 @@ class BoWBTransform(StatelessTransform):
 
     def fit(self, X, y=None):
         text = X.articleBody.values.astype('U')
-        self.cv = CountVectorizer(ngram_range=(1, self.ngram_upper_range),
+        self.cv = CountVectorizer(ngram_range=(1, 1),
                                   binary=True,
                                   max_features=self.max_features,
                                   )
@@ -29,7 +29,24 @@ class BoWBTransform(StatelessTransform):
         return self
 
     def transform(self, X, y=None):
-        text = X.articleHeadline.values
+        text = X.articleBody.values.astype('U')
+        return self.cv.transform(text)
+
+class BoWSTransform(StatelessTransform):
+
+    def __init__(self, ngram_upper_range=2, max_features=1000):
+        self.cv = None
+        self.ngram_upper_range = ngram_upper_range
+        self.max_features = max_features
+
+    def fit(self, X, y=None):
+        text = X.articleSummary.values.astype('U')
+        self.cv = CountVectorizer(ngram_range=(1, 1), binary=True, max_features=self.max_features)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleSummary.values.astype('U')
         return self.cv.transform(text)
 
 # Bag of Unigram (terms/words)
