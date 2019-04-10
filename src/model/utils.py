@@ -57,7 +57,8 @@ def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
 
 def split_data(data):
     y = data.articleHeadlineStance
-    X = data[['claimHeadline', 'articleHeadline', 'articleBody', 'claimId', 'articleId']]
+    # X = data[['claimHeadline', 'articleHeadline', 'articleBody', 'claimId', 'articleId']]
+    X = data[['claimHeadline', 'articleHeadline', 'claimId', 'articleId']]
     return X, y
 
 
@@ -368,11 +369,11 @@ class RunCV(object):
         cms = []
 
         def scorer(estimator, XX, yy):
-            if self.display:
-                print('\n>> Fold: {0} <<'.format(self.fold))
+            # if self.display:
+            #     print('\n>> Fold: {0} <<'.format(self.fold))
             score = estimator.score(XX, yy)
-            if self.display:
-                print(str(score))
+            # if self.display:
+            #     print(str(score))
             self.fold += 1
             measures.append(score.measures)
             cms.append(score.cm)

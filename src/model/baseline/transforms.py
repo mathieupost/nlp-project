@@ -5,12 +5,53 @@ from scipy.sparse import dok_matrix
 from nltk.util import ngrams
 from nltk.corpus import stopwords
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from model.base import StatelessTransform
 from model.utils import get_tokenized_lemmas, get_stanparse_data, \
     get_brown_cluster_data, get_aligned_data, get_stem
 
+class BoWTransform(StatelessTransform):
+
+    def __init__(self, ngram_upper_range=2, max_features=500):
+        self.cv = None
+        self.ngram_upper_range = ngram_upper_range
+        self.max_features = max_features
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(ngram_range=(1, self.ngram_upper_range),
+                                  max_features=self.max_features)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+class CosSimTransform(StatelessTransform):
+
+    def __init__(self):
+        self.tfidf_vectorizer = None
+
+    def fit(self, X, y=None):
+        headers = X.articleHeadline.values
+        bodies = X.articleBody.values.astype('U')
+        self.tfidf_vectorizer = TfidfVectorizer(max_features=5000).fit(headers + bodies)
+        return self
+
+    def transform(self, X, y=None):
+        headers = X.articleHeadline.values
+        bodies = X.articleBody.values.astype('U')
+
+        mat = np.zeros((len(X), 1))
+        for i, (_, s) in enumerate(X.iterrows()):
+            header_tfidf = self.tfidf_vectorizer.transform([headers[i]]).toarray()
+            body_tfidf = self.tfidf_vectorizer.transform([bodies[i]]).toarray()
+            cossim = cosine_similarity(header_tfidf, body_tfidf)[0]
+            mat[i, 0] = cossim
+        return mat
 
 class BoWBTransform(StatelessTransform):
 
