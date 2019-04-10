@@ -22,9 +22,8 @@ import nltk
 from nltk.corpus import wordnet as wn
 from nltk.stem.porter import PorterStemmer
 from sklearn.model_selection import cross_val_score, KFold
-
-
 from model.cross_validation import ClaimKFold
+
 
 VALID_STANCE_LABELS = ['for', 'against', 'observing']
 
@@ -59,6 +58,7 @@ def get_dataset(filename='url-versions-2015-06-14-clean.csv'):
 def split_data(data):
     y = data.articleHeadlineStance
     X = data[['claimHeadline', 'articleHeadline', 'articleBody', 'claimId', 'articleId']]
+    # X = data[['claimHeadline', 'articleHeadline', 'claimId', 'articleId']]
     return X, y
 
 
@@ -369,11 +369,11 @@ class RunCV(object):
         cms = []
 
         def scorer(estimator, XX, yy):
-            if self.display:
-                print('\n>> Fold: {0} <<'.format(self.fold))
+            # if self.display:
+            #     print('\n>> Fold: {0} <<'.format(self.fold))
             score = estimator.score(XX, yy)
-            if self.display:
-                print(str(score))
+            # if self.display:
+            #     print(str(score))
             self.fold += 1
             measures.append(score.measures)
             cms.append(score.cm)
@@ -404,6 +404,7 @@ def run_test(X, y, test_data, predictor, display=False):
     score = predictor.score(test_data_copy, y_test)
 
     if display:
+        print(predictor.classifier)
         print(str(score))
     return score
 

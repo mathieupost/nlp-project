@@ -12,9 +12,11 @@ class LogitPredictor(AbstractPredictor):
         union = make_union(*[t() for t in transforms])
         pipeline = [union]
         self.pipeline = make_pipeline(*pipeline)
-        self.classifier = LogisticRegression(penalty='l2', multi_class='multinomial', class_weight='balanced', solver='newton-cg')
 
-
+        # self.classifier = LogisticRegression(penalty='l1', class_weight='balanced', solver='saga', max_iter=10000,
+        # multi_class='multinomial')
+        self.classifier = LogisticRegression(penalty='l2', multi_class='multinomial', class_weight='balanced',
+                                             solver='newton-cg')
 class ObservingPredictor(AbstractPredictor):
 
     def __init__(self, transforms):

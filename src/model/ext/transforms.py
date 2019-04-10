@@ -9,7 +9,6 @@ from model.utils import get_stanparse_data, \
 
 from model.baseline.transforms import _refuting_words, _hedging_words
 
-
 class Word2VecSimilaritySemanticTransform(StatelessTransform):
 
     def transform(self, X):
