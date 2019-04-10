@@ -93,7 +93,6 @@ if __name__ == '__main__':
             if type(body) is str:
                 # summary = summarizer.summarize(to_summarize,"textrank", 0.4)
                 summary = summarize(header, body)
-                print summary[0]
                 summaries.append(summary[0])
             else:
                 summaries.append(header)
@@ -104,7 +103,6 @@ if __name__ == '__main__':
             if type(body) is str:
                 # summary = summarizer.summarize(to_summarize,"textrank", 0.4)
                 summary = summarize(header, body)
-                print summary[0]
                 summaries.append(summary[0])
             else:
                 summaries.append(header)
