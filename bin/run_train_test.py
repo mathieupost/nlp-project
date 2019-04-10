@@ -8,7 +8,7 @@ import re
 import numpy as np
 import pandas as pd
 # Import summarizer
-from text_summarizer import summarizer
+# from text_summarizer import summarizer
 from summarizer import summarize
 from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
 from model.classifiers.rf_predictors import RandomForestPredictor
