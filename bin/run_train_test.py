@@ -7,15 +7,36 @@ sys.path.append(os.path.join('..', 'src'))
 import re
 import numpy as np
 import pandas as pd
+import numpy as np
+sys.path.append(os.path.join('..', 'src'))
+
+
+from numpy import loadtxt
+from xgboost import XGBClassifier
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.metrics import classification_report
+
 # Import summarizer
 # from text_summarizer import summarizer
 from summarizer import summarize
 from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
-from model.classifiers.rf_predictors import RandomForestPredictor
+# from model.classifiers.rf_predictors import RandomForestPredictor
+from model.classifiers.classifier_showdown import ShowDownPredictor
 from model.utils import get_dataset, split_data, RunCV, run_test
 
 
 from model.baseline.transforms import (
+    CosSimTransform,
     RefutingWordsTransform,
     QuestionMarkTransform,
     HedgingWordsTransform,
@@ -31,7 +52,8 @@ from model.baseline.transforms import (
     BoRefutingBodyTransform,
     BoHedgingBodyTransform,
     PolarityTransform,
-    BrownClusterPairTransform
+    BrownClusterPairTransform,
+    BoWTransform
 )
 
 from model.ext.transforms import (
@@ -59,6 +81,9 @@ if __name__ == '__main__':
     #     'SVO',              # 1780-1788     9
     #     ]
 
+    # default="Q,CosSim,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO,W2V",
+    # Q,BoW,PPDB,RootDep,NegAlgn,SVO,W2V
+
     parser.add_argument('-f',
                         default="RootDep,Q,PPDB,BoUg,BoBg,SVO,BoW-B,BoW-S,W2V,NegAlgn",
                         type=str)
@@ -69,13 +94,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # When running original project, use LogitPredictor
     predictor = LogitPredictor
+    # predictor = ShowDownPredictor
 
     train_data = get_dataset('url-versions-2015-06-14-clean-with-body-train-with-body.csv')
     X, y = split_data(train_data)
+    # Split the dataset in two equal parts
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #     X, y, test_size=0.5, random_state=0)
+
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
+        'CosSim': CosSimTransform,
         'BoW-B': BoWBTransform,
         'BoW-S': BoWSTransform,
         'BoW': BoWTransform,
@@ -91,6 +123,7 @@ if __name__ == '__main__':
         'NegAlgn': NegationAlignmentTransform,
         'RootDep': DependencyRootDepthTransform,
         'SVO': SVOTransform,
+        'BoW' : BoWBTransform,
     }
 
     if 'BoW-S' in transforms:
@@ -182,9 +215,31 @@ if __name__ == '__main__':
 
         print(df_out * 100.0)
     else:
+        # classifiers = [
+           # KNeighborsClassifier(18),  # working
+            #SVC(kernel="rbf", C=1000, probability=True, gamma=0.0001),  # working
+            #DecisionTreeClassifier(),  # working
+            #RandomForestClassifier(n_estimators=100),  # working
+            #GradientBoostingClassifier(),  # working
+            #XGBClassifier()
+        #]
+
+         # p = predictor([transforms[t] for t in inc_transforms])
+         # cv_score = RunCV(X, y, p, display=True).run_cv()
+         # print 'CV score: ', cv_score.accuracy
+         # if args.t:
+         #    print 'arg f is set: ', args.t
+         #    test_score = run_test(X, y, test_data, p, display=True)
+
+        # for clf in classifiers:
+        #     p = predictor([transforms[t] for t in inc_transforms], clf)
+        #     print clf
+        #     cv_score = RunCV(X, y, p, display=True).run_cv()
+
         p = predictor([transforms[t] for t in inc_transforms])
         cv_score = RunCV(X, y, p, display=False).run_cv()
         print 'CV score: ', cv_score.accuracy
         if args.t:
             test_score = run_test(X, y, test_data, p, display=True)
+
 
