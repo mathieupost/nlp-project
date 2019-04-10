@@ -27,6 +27,7 @@ from model.classifiers.classifier_showdown import ShowDownPredictor
 from model.utils import get_dataset, split_data, RunCV, run_test
 
 from model.baseline.transforms import (
+    CosSimTransform,
     RefutingWordsTransform,
     QuestionMarkTransform,
     HedgingWordsTransform,
@@ -36,7 +37,8 @@ from model.baseline.transforms import (
     BoUgTransform,
     BoBgTransform,
     PolarityTransform,
-    BrownClusterPairTransform
+    BrownClusterPairTransform,
+    BoWTransform
 )
 
 from model.ext.transforms import (
@@ -64,8 +66,11 @@ if __name__ == '__main__':
     #     'SVO',              # 1780-1788     9
     #     ]
 
+    # default="Q,CosSim,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO,W2V",
+    # Q,BoW,PPDB,RootDep,NegAlgn,SVO,W2V
+
     parser.add_argument('-f',
-                        default="Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoW,PPDB,RootDep,NegAlgn,SVO,W2V",
                         type=str)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
@@ -75,28 +80,29 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # When running original project, use LogitPredictor
-    predictor = LogitPredictor
-    # predictor = ShowDownPredictor
+    # predictor = LogitPredictor
+    predictor = ShowDownPredictor
 
     train_data = get_dataset('url-versions-2015-06-14-clean-with-body-train-with-body.csv')
     X, y = split_data(train_data)
     # Split the dataset in two equal parts
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.5, random_state=0)
-
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #     X, y, test_size=0.5, random_state=0)
 
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
+        'CosSim': CosSimTransform,
         'BoW-B': BoWBTransform,
         'BoUg': BoUgTransform,
         'BoBg': BoBgTransform,
         'Q': QuestionMarkTransform,
-        # 'W2V': Word2VecSimilaritySemanticTransform,
+        'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
         'NegAlgn': NegationAlignmentTransform,
         'RootDep': DependencyRootDepthTransform,
         'SVO': SVOTransform,
+        'BoW' : BoWBTransform,
     }
 
     inc_transforms = args.f.split(',')
@@ -131,7 +137,7 @@ if __name__ == '__main__':
         if args.f:
             features = args.f
         else:
-            features = "Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO"
+            features = "Q,CosSim,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO"
         ablations = [[x] for x in features.split(',')]
         df_out = pd.DataFrame(index=['-' + str(a) for a in ablations],
                               columns=['accuracy-cv', 'accuracy-test'], data=np.nan)
@@ -167,109 +173,27 @@ if __name__ == '__main__':
 
         print(df_out * 100.0)
     else:
-         classifiers = [
+        classifiers = [
             KNeighborsClassifier(18),  # working
-            SVC(kernel="rbf", C=1000, probability=True, gamma=0.0001),  # working
-            DecisionTreeClassifier(),  # working
-            RandomForestClassifier(n_estimators=100),  # working
-            GradientBoostingClassifier(),  # working
-            XGBClassifier()
-         ]
+            #SVC(kernel="rbf", C=1000, probability=True, gamma=0.0001),  # working
+            #DecisionTreeClassifier(),  # working
+            #RandomForestClassifier(n_estimators=100),  # working
+            #GradientBoostingClassifier(),  # working
+            #XGBClassifier()
+        ]
 
-        # Set the parameters by cross-validation
-         #         #tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
-         #                             # 'C': [1, 10, 100, 1000]},
-         #                             # {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
-         #
-         #         #scores = ['precision', 'recall']
-         #
-         #         #for score in scores:
-         #             # print("# Tuning hyper-parameters for %s" % score)
-         #             # print()
-         #
-         #             # clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
-         #                                # scoring='%s_macro' % score)
-         #
-         #             # p = predictor([transforms[t] for t in inc_transforms], clf)
-         #             # test_score = run_test(X_train, y_train, test_data, p, display=True)
-         #
-         #             # print("Best parameters set found on development set:")
-         #             # print()
-         #             # print(clf.best_params_)
-         #             # print()
-         #             # print("Grid scores on development set:")
-         #             # print()
-         #             # means = clf.cv_results_['mean_test_score']
-         #             # stds = clf.cv_results_['std_test_score']
-         #             # for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-         #              #   print("%0.3f (+/-%0.03f) for %r"
-         #                       # % (mean, std * 2, params))
-         #             # print()
-         #
-         #             # print("Detailed classification report:")
-         #             # print()
-         #             # print("The model is trained on the full development set.")
-         #             # print("The scores are computed on the full evaluation set.")
-         #             # print()
-         #
-         #             # y_true, y_pred = y_test, p.predict(X_test)
-         #
-         #             # print(classification_report(y_true, y_pred))
-         #             # print()
-
-
-        # Logging for Visual Comparison
-        # log_cols = ["Classifier", "Accuracy", "Log Loss"]
-        # log = pd.DataFrame(columns=log_cols)
-
-        # Classifier showdown
-
-         # Set the parameters by cross-validation
-         #     param_grid = {'n_neighbors': np.arange(1, 25)}
-    #
-    # scores = ['precision', 'recall']
-    #
-    # for score in scores:
-    #    print("# Tuning hyper-parameters for %s" % score)
-    #    print()
-    #    knn2 = KNeighborsClassifier()
-    #    clf = GridSearchCV(knn2, param_grid, cv=10,
-    #        scoring='%s_macro' % score)
-    #
-    #    p = predictor([transforms[t] for t in inc_transforms], clf)
-    #    test_score = run_test(X_train, y_train, test_data, p, display=True)
-    #
-    #    print("Best parameters set found on development set:")
-    #    print()
-    #    print(clf.best_params_)
-    #    print()
-    #    print("Grid scores on development set:")
-    #    print()
-    #    means = clf.cv_results_['mean_test_score']
-    #    stds = clf.cv_results_['std_test_score']
-    #    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-    #       print("%0.3f (+/-%0.03f) for %r"
-    #    % (mean, std * 2, params))
-    #    print()
-    #
-    #    print("Detailed classification report:")
-    #    print()
-    #    print("The model is trained on the full development set.")
-    #    print("The scores are computed on the full evaluation set.")
-    #    print()
-    #
-    #    y_true, y_pred = y_test, p.predict(X_test)
-    #
-    #    print(classification_report(y_true, y_pred))
-    #    print()
+         # p = predictor([transforms[t] for t in inc_transforms])
+         # cv_score = RunCV(X, y, p, display=True).run_cv()
+         # print 'CV score: ', cv_score.accuracy
+         # if args.t:
+         #    print 'arg f is set: ', args.t
+         #    test_score = run_test(X, y, test_data, p, display=True)
 
         # for clf in classifiers:
         #     p = predictor([transforms[t] for t in inc_transforms], clf)
-        #     test_score = run_test(X, y, test_data, p, display=True)
+        #     print clf
+        #     cv_score = RunCV(X, y, p, display=True).run_cv()
 
-        p = predictor([transforms[t] for t in inc_transforms])
-        cv_score = RunCV(X, y, p, display=True).run_cv()
-        print 'CV score: ', cv_score.accuracy
-        if args.t:
-            print 'arg f is set: ', args.t
-            test_score = run_test(X, y, test_data, p, display=True)
+
+
+
