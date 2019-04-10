@@ -4,7 +4,8 @@ try:
     import cPickle as pickle
 except:
     import pickle
-
+import sys
+sys.path.append(os.path.join('..', 'src'))
 import numpy as np
 
 from model.utils import get_w2vec_data, get_dataset, cosine_sim
@@ -25,5 +26,5 @@ if __name__ == "__main__":
         cos_add[(row.claimId, row.articleId)] = cosn(w2v_add[row.claimId], w2v_add[row.articleId])
         cos_mult[(row.claimId, row.articleId)] = cosn(w2v_mult[row.claimId], w2v_mult[row.articleId])
 
-    with open(os.path.join('..', 'data', 'pickled', 'cosine-similarity.pickle'), 'wb') as f:
+    with open(os.path.join('..', 'data', 'pickled', 'cosine-similarity-with-body.pickle'), 'wb') as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)

@@ -4,13 +4,16 @@ import os
 
 sys.path.append(os.path.join('..', 'src'))
 
+import re
 import numpy as np
 import pandas as pd
-
-
+# Import summarizer
+from text_summarizer import summarizer
+from summarizer import summarize
 from model.classifiers.lr_predictors import LogitPredictor, CompoundPredictor
 from model.classifiers.rf_predictors import RandomForestPredictor
 from model.utils import get_dataset, split_data, RunCV, run_test
+
 
 from model.baseline.transforms import (
     RefutingWordsTransform,
@@ -19,6 +22,7 @@ from model.baseline.transforms import (
     InteractionTransform,
     NegationOfRefutingWordsTransform,
     BoWBTransform,
+    BoWSTransform,
     BoUgTransform,
     BoBgTransform,
     BoRefutingTransform,
@@ -53,7 +57,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoUg,BoBg,BoW-B,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="Q,BoUg,BoBg,BoW-B,BoW-S,W2V,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
     parser.add_argument('-t', action='store_true')
     group = parser.add_mutually_exclusive_group()
@@ -66,11 +70,11 @@ if __name__ == '__main__':
 
     train_data = get_dataset('url-versions-2015-06-14-clean-with-body-train-with-body.csv')
     X, y = split_data(train_data)
-
     test_data = get_dataset('url-versions-2015-06-14-clean-with-body-test-with-body.csv')
 
     transforms = {
         'BoW-B': BoWBTransform,
+        'BoW-S': BoWSTransform,
         'BoUg': BoUgTransform,
         'BoBg': BoBgTransform,
         'BoR': BoRefutingTransform,
@@ -83,6 +87,29 @@ if __name__ == '__main__':
         'SVO': SVOTransform,
     }
 
+    if 'BoW-S' in transforms:
+        summaries = []
+        for header, body in X[['articleHeadline', 'articleBody']].values:
+            if type(body) is str:
+                # summary = summarizer.summarize(to_summarize,"textrank", 0.4)
+                summary = summarize(header, body)
+                print summary[0]
+                summaries.append(summary[0])
+            else:
+                summaries.append(header)
+        X['articleSummary'] = summaries
+
+        summaries = []
+        for header, body in test_data[['articleHeadline', 'articleBody']].values:
+            if type(body) is str:
+                # summary = summarizer.summarize(to_summarize,"textrank", 0.4)
+                summary = summarize(header, body)
+                print summary[0]
+                summaries.append(summary[0])
+            else:
+                summaries.append(header)
+
+        test_data['articleSummary'] = summaries
     inc_transforms = args.f.split(',')
     diff = set(inc_transforms).difference(transforms.keys())
     if diff:
@@ -115,7 +142,7 @@ if __name__ == '__main__':
         if args.f:
             features = args.f
         else:
-            features = "Q,BoUg,BoBg,BoW-B,PPDB,RootDep,NegAlgn,SVO"
+            features = "BoW-S,Q,BoUg,BoBg,PPDB,RootDep,NegAlgn,SVO"
         ablations = [[x] for x in features.split(',')]
         df_out = pd.DataFrame(index=['-' + str(a) for a in ablations],
                               columns=['accuracy-cv', 'accuracy-test'], data=np.nan)
