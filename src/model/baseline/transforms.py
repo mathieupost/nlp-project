@@ -63,7 +63,9 @@ class BoWBTransform(StatelessTransform):
     def fit(self, X, y=None):
         text = X.articleBody.values.astype('U')
         self.cv = CountVectorizer(ngram_range=(1, self.ngram_upper_range),
-                                  max_features=self.max_features)
+                                  binary=True,
+                                  max_features=self.max_features,
+                                  )
         self.cv.fit_transform(text)
         return self
 
@@ -74,13 +76,16 @@ class BoWBTransform(StatelessTransform):
 # Bag of Unigram (terms/words)
 class BoUgTransform(StatelessTransform):
 
-    def __init__(self, max_features=1000):
+    def __init__(self, max_features=1500):
         self.cv = None
         self.max_features = max_features
 
     def fit(self, X, y=None):
         text = X.articleHeadline.values
-        self.cv = CountVectorizer(ngram_range=(1, 1), max_features=self.max_features)
+        self.cv = CountVectorizer(ngram_range=(1, 1),
+                                  binary=True,
+                                  max_features=self.max_features,
+                                  )
         self.cv.fit_transform(text)
         return self
 
@@ -91,13 +96,48 @@ class BoUgTransform(StatelessTransform):
 # Bag of Bigrams
 class BoBgTransform(StatelessTransform):
 
-    def __init__(self, max_features=2000):
+    def __init__(self, max_features=1500):
         self.cv = None
         self.max_features = max_features
 
     def fit(self, X, y=None):
         text = X.articleHeadline.values
-        self.cv = CountVectorizer(ngram_range=(2, 2), max_features=self.max_features)
+        self.cv = CountVectorizer(ngram_range=(2, 2),
+                                  binary=True,
+                                  max_features=self.max_features,
+                                  )
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Refuting Words
+class BoRefutingTransform(StatelessTransform):
+
+    def __init__(self):
+        self.cv = None
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(vocabulary=_refuting_words, binary=True)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Hedging Words
+class BoHedgingTransform(StatelessTransform):
+
+    def __init__(self):
+        self.cv = None
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(vocabulary=_hedging_words, binary=True)
         self.cv.fit_transform(text)
         return self
 
@@ -111,8 +151,9 @@ _refuting_seed_words = [
                         'fraud',
                         'hoax',
                         'false',
+                        'untrue',
                         'deny', 'denies',
-                        # 'refute',
+                        'refute',
                         'not',
                         'despite',
                         'nope',
@@ -225,7 +266,7 @@ _hedging_seed_words = \
         'says',
         'seem',
         'somewhat',
-        # 'supposedly',
+        'supposedly',
         'unconfirmed']
 
 _hedging_words = _hedging_seed_words

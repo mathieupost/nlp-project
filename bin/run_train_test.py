@@ -36,6 +36,8 @@ from model.baseline.transforms import (
     BoWBTransform,
     BoUgTransform,
     BoBgTransform,
+    BoRefutingTransform,
+    BoHedgingTransform,
     PolarityTransform,
     BrownClusterPairTransform,
     BoWTransform
@@ -70,12 +72,12 @@ if __name__ == '__main__':
     # Q,BoW,PPDB,RootDep,NegAlgn,SVO,W2V
 
     parser.add_argument('-f',
-                        default="Q,BoW,PPDB,RootDep,NegAlgn,SVO,W2V",
+              default="Q,BoUg,BoBg,BoW-B,W2V,PPDB,RootDep,NegAlgn,SVO",
                         type=str)
+    parser.add_argument('-t', action='store_true')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', action='store_true')
     group.add_argument('-a', action='store_true')
-    group.add_argument('-t', action='store_true')
 
     args = parser.parse_args()
 
@@ -96,6 +98,8 @@ if __name__ == '__main__':
         'BoW-B': BoWBTransform,
         'BoUg': BoUgTransform,
         'BoBg': BoBgTransform,
+        'BoR': BoRefutingTransform,
+        'BoH': BoHedgingTransform,
         'Q': QuestionMarkTransform,
         'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
@@ -173,14 +177,14 @@ if __name__ == '__main__':
 
         print(df_out * 100.0)
     else:
-        classifiers = [
-            KNeighborsClassifier(18),  # working
+        # classifiers = [
+           # KNeighborsClassifier(18),  # working
             #SVC(kernel="rbf", C=1000, probability=True, gamma=0.0001),  # working
             #DecisionTreeClassifier(),  # working
             #RandomForestClassifier(n_estimators=100),  # working
             #GradientBoostingClassifier(),  # working
             #XGBClassifier()
-        ]
+        #]
 
          # p = predictor([transforms[t] for t in inc_transforms])
          # cv_score = RunCV(X, y, p, display=True).run_cv()
@@ -194,6 +198,10 @@ if __name__ == '__main__':
         #     print clf
         #     cv_score = RunCV(X, y, p, display=True).run_cv()
 
-
+        p = predictor([transforms[t] for t in inc_transforms])
+        cv_score = RunCV(X, y, p, display=False).run_cv()
+        print 'CV score: ', cv_score.accuracy
+        if args.t:
+            test_score = run_test(X, y, test_data, p, display=True)
 
 
