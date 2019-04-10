@@ -49,6 +49,26 @@ class BoWSTransform(StatelessTransform):
         text = X.articleSummary.values.astype('U')
         return self.cv.transform(text)
 
+# Bag of Words (unigram + bigrams)
+class BoWTransform(StatelessTransform):
+
+    def __init__(self, max_features=500):
+        self.cv = None
+        self.max_features = max_features
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(ngram_range=(1, 2),
+                                  # binary=True,
+                                  max_features=self.max_features,
+                                  )
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
 # Bag of Unigram (terms/words)
 class BoUgTransform(StatelessTransform):
 
@@ -89,7 +109,7 @@ class BoBgTransform(StatelessTransform):
         text = X.articleHeadline.values
         return self.cv.transform(text)
 
-# Bag of Refuting Words
+# Bag of Refuting Words (headline)
 class BoRefutingTransform(StatelessTransform):
 
     def __init__(self):
@@ -105,8 +125,40 @@ class BoRefutingTransform(StatelessTransform):
         text = X.articleHeadline.values
         return self.cv.transform(text)
 
-# Bag of Hedging Words
+# Bag of Hedging Words (headline)
 class BoHedgingTransform(StatelessTransform):
+
+    def __init__(self):
+        self.cv = None
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(vocabulary=_hedging_words, binary=True)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Refuting Words (body)
+class BoRefutingBodyTransform(StatelessTransform):
+
+    def __init__(self):
+        self.cv = None
+
+    def fit(self, X, y=None):
+        text = X.articleHeadline.values
+        self.cv = CountVectorizer(vocabulary=_refuting_words, binary=True)
+        self.cv.fit_transform(text)
+        return self
+
+    def transform(self, X, y=None):
+        text = X.articleHeadline.values
+        return self.cv.transform(text)
+
+# Bag of Hedging Words (body)
+class BoHedgingBodyTransform(StatelessTransform):
 
     def __init__(self):
         self.cv = None
@@ -123,21 +175,21 @@ class BoHedgingTransform(StatelessTransform):
 
 
 _refuting_seed_words = [
-                        'fake',
-                        'fraud',
-                        'hoax',
-                        'false',
-                        'untrue',
-                        'deny', 'denies',
-                        'refute',
-                        'not',
-                        'despite',
-                        'nope',
-                        'doubt', 'doubts',
-                        'bogus',
-                        'debunk',
-                        'pranks',
-                        'retract'
+    'fake',
+    'fraud',
+    'hoax',
+    'false',
+    'untrue',
+    'deny', 'denies',
+    'refute',
+    'not',
+    'despite',
+    'nope',
+    'doubt', 'doubts',
+    'bogus',
+    'debunk',
+    'pranks',
+    'retract',
 ]
 
 _refuting_words = _refuting_seed_words
@@ -220,30 +272,30 @@ class QuestionMarkTransform(StatelessTransform):
                 mat[i, 0] = 1
         return mat
 
-_hedging_seed_words = \
-    [
-        'alleged', 'allegedly',
-        'apparently',
-        'appear', 'appears',
-        'claim', 'claims',
-        'could',
-        'evidently',
-        'largely',
-        'likely',
-        'mainly',
-        'may', 'maybe', 'might',
-        'mostly',
-        'perhaps',
-        'presumably',
-        'probably',
-        'purported', 'purportedly',
-        'reported', 'reportedly',
-        'rumor', 'rumour', 'rumors', 'rumours', 'rumored', 'rumoured',
-        'says',
-        'seem',
-        'somewhat',
-        'supposedly',
-        'unconfirmed']
+_hedging_seed_words = [
+    'alleged', 'allegedly',
+    'apparently',
+    'appear', 'appears',
+    'claim', 'claims',
+    'could',
+    'evidently',
+    'largely',
+    'likely',
+    'mainly',
+    'may', 'maybe', 'might',
+    'mostly',
+    'perhaps',
+    'presumably',
+    'probably',
+    'purported', 'purportedly',
+    'reported', 'reportedly',
+    'rumor', 'rumour', 'rumors', 'rumours', 'rumored', 'rumoured',
+    'says',
+    'seem',
+    'somewhat',
+    'supposedly',
+    'unconfirmed',
+]
 
 _hedging_words = _hedging_seed_words
 

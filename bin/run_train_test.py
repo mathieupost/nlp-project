@@ -21,12 +21,15 @@ from model.baseline.transforms import (
     HedgingWordsTransform,
     InteractionTransform,
     NegationOfRefutingWordsTransform,
+    BoWTransform,
     BoWBTransform,
     BoWSTransform,
     BoUgTransform,
     BoBgTransform,
     BoRefutingTransform,
     BoHedgingTransform,
+    BoRefutingBodyTransform,
+    BoHedgingBodyTransform,
     PolarityTransform,
     BrownClusterPairTransform
 )
@@ -57,7 +60,7 @@ if __name__ == '__main__':
     #     ]
 
     parser.add_argument('-f',
-                        default="Q,BoUg,BoBg,BoW-B,BoW-S,W2V,PPDB,RootDep,NegAlgn,SVO",
+                        default="RootDep,Q,PPDB,BoUg,BoBg,SVO,BoW-B,BoW-S,W2V,NegAlgn",
                         type=str)
     parser.add_argument('-t', action='store_true')
     group = parser.add_mutually_exclusive_group()
@@ -75,10 +78,13 @@ if __name__ == '__main__':
     transforms = {
         'BoW-B': BoWBTransform,
         'BoW-S': BoWSTransform,
+        'BoW': BoWTransform,
         'BoUg': BoUgTransform,
         'BoBg': BoBgTransform,
         'BoR': BoRefutingTransform,
         'BoH': BoHedgingTransform,
+        'BoRB': BoRefutingBodyTransform,
+        'BoHB': BoHedgingBodyTransform,
         'Q': QuestionMarkTransform,
         'W2V': Word2VecSimilaritySemanticTransform,
         'PPDB': AlignedPPDBSemanticTransform,
@@ -125,7 +131,7 @@ if __name__ == '__main__':
             print 'Using features:', inc_transforms[:i+1]
 
             p = predictor(inc_transforms_cls)
-            cv_score = RunCV(X, y, p, display=True).run_cv()
+            cv_score = RunCV(X, y, p, display=False).run_cv()
             df_out.ix[k, 'accuracy-cv'] = cv_score.accuracy
 
             if args.t:
